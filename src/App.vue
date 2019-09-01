@@ -2,6 +2,7 @@
   <div id="box">
     <span style="font-size: 50px; color: #B1B1B1">Currency Converter</span>
     <hr />
+
     <span>Enter Amount: &nbsp;</span>
     <input type="number" v-model.number="amount" placeholder="Enter Amount" />
     <br />
@@ -41,12 +42,13 @@ export default {
     return {
       name: "dropdown",
       currencyfrom: [
-        { name: "INR", desc: "INR" },
+        { name: "USD", desc: "USD" },
         { name: "MYR", desc: "MYR" }
       ],
-      convertfrom: "INR",
-      convertto: "INR",
-      amount: ""
+      convertfrom: "USD",
+      convertto: "MYR",
+      amount: "",
+      Spot_Rate: ""
     };
   },
   mounted() {
@@ -55,26 +57,28 @@ export default {
         "https://g9jgss86gg.execute-api.us-east-1.amazonaws.com/test/currency/details?currency_code=MYR"
       )
       .then(response => {
-        this.convertfrom = response.data.payload.code;
+        this.Spot_Rate = response.data.payload.spot_rate;
       });
   },
   computed: {
     finalamount: function() {
       var to = this.convertto;
       var from = this.convertfrom;
+      var spot_rate = this.Spot_Rate;
+
       var final;
       switch (from) {
         case "MYR":
           {
-            if (to == "INR") {
-              final = (this.amount * 17).toFixed(2);
+            if (to == "USD") {
+              final = (this.amount / spot_rate).toFixed(2);
             }
           }
           break;
-        case "INR":
+        case "USD":
           {
             if (to == "MYR") {
-              final = this.amount * (0.05).toFixed(2);
+              final = (this.amount * spot_rate).toFixed(2);
             }
           }
           break;
