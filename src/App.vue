@@ -85,6 +85,8 @@ export default {
 
         return (this.amount / this.toSpotRate).toFixed(2);
       }
+
+      //  from currency and to currency are same then result
       if (this.fromSpotRate === this.toSpotRate) {
         return this.amount;
       }
