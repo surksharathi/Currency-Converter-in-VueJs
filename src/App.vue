@@ -79,24 +79,20 @@ export default {
       // you can directly return the output
       // it will be rendered in {{ convertedCurrencyRate }} on the template
 
-      if (this.fromSpotRate < this.toSpotRate) {
+      if (
+        this.fromSpotRate < this.toSpotRate ||
+        this.fromSpotRate > this.toSpotRate
+      ) {
         //  the necessary calculations are here.
         // and return the value
 
-        return (this.amount / this.toSpotRate).toFixed(2);
+        return ((this.amount / this.fromSpotRate) * this.toSpotRate).toFixed(2);
       }
 
       //  from currency and to currency are same then result
       if (this.fromSpotRate === this.toSpotRate) {
         return this.amount;
       }
-
-      /* 
-        "The from currencey value is either greater than or equal to the destination currency value."
-      */
-      // then  the necessary calculations  are here
-      // and return the value
-      return (this.amount * this.fromSpotRate).toFixed(2);
     }
   },
 
