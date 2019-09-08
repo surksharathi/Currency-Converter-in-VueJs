@@ -2,7 +2,6 @@
   <div id="box">
     <span style="font-size: 50px; color: #B1B1B1">Currency Converter</span>
     <hr />
-
     <span>Enter Amount: &nbsp;</span>
     <input type="number" v-model.number="amount" placeholder="Enter Amount" />
     <br />
@@ -11,25 +10,40 @@
 
     <select v-model="convertfrom">
       <option
-        v-for="(a, index) in currencyfrom"
-        v-bind:value="a.name"
+        v-for="(currency, index) in currencies"
+        v-bind:value="currency.name"
         v-bind:key="index"
-        v-bind:name="a.desc"
-      >{{a.desc}}</option>
+        v-bind:name="currency.desc"
+      >{{currency.desc}}</option>
     </select>
-
-    <span>&nbsp;&nbsp;Convert To: &nbsp;</span>
+    <span></span>
+    <span>&nbsp; &nbsp;Convert To: &nbsp;</span>
     <select v-model="convertto">
       <option
-        v-for="(a, index) in currencyfrom"
-        v-bind:value="a.name"
+        v-for="(currency, index) in currencies"
+        v-bind:value="currency.name"
         v-bind:key="index"
-        v-bind:name="a.desc"
-      >{{a.desc}}</option>
+        v-bind:name="currency.desc"
+      >{{currency.desc}}</option>
     </select>
     <br />
+
+    <div class="button_cont" align="center">
+      <a
+        v-on:click.prevent="convert"
+        id="convert-button"
+        class="button_style"
+        href="add-website-here"
+        target="_blank"
+        rel="nofollow noopener"
+      >
+        <b>Convert</b>
+      </a>
+    </div>
+
     <br />
-    <span>{{amount}} {{convertfrom}} equals {{finalamount}} {{convertto}}</span>
+    <br />
+    <span>{{amount}} {{convertfrom}} equals {{ convertedCurrencyRate }} {{convertto}}</span>
   </div>
 </template>
 
@@ -41,49 +55,66 @@ export default {
   data() {
     return {
       name: "dropdown",
-      currencyfrom: [
-        { name: "USD", desc: "USD" },
-        { name: "MYR", desc: "MYR" }
+      currencies: [
+        { name: "EUR", desc: "EUR" },
+        { name: "MYR", desc: "MYR" },
+        { name: "USD", desc: "USD" }
       ],
-      convertfrom: "USD",
-      convertto: "MYR",
+      convertfrom: "",
+      convertto: "",
       amount: "",
-      Spot_Rate: ""
+      fromSpotRate: 0,
+      toSpotRate: 0,
+      final: ""
     };
   },
-  mounted() {
-    axios
-      .get(
-        "https://g9jgss86gg.execute-api.us-east-1.amazonaws.com/test/currency/details?currency_code=MYR"
-      )
-      .then(response => {
-        this.Spot_Rate = response.data.payload.spot_rate;
-      });
-  },
-  computed: {
-    finalamount: function() {
-      var to = this.convertto;
-      var from = this.convertfrom;
-      var spot_rate = this.Spot_Rate;
 
-      var final;
-      switch (from) {
-        case "MYR":
-          {
-            if (to == "USD") {
-              final = (this.amount / spot_rate).toFixed(2);
-            }
-          }
-          break;
-        case "USD":
-          {
-            if (to == "MYR") {
-              final = (this.amount * spot_rate).toFixed(2);
-            }
-          }
-          break;
+  computed: {
+    convertedCurrencyRate() {
+      if (this.fromSpotRate === 0 || this.toSpotRate === 0) {
+        return "(No conversion made)";
       }
-      return final;
+
+      // the currency calucations here based on the spot rates.
+      // you can directly return the output
+      // it will be rendered in {{ convertedCurrencyRate }} on the template
+
+      if (this.fromSpotRate < this.toSpotRate) {
+        //  the necessary calculations are here.
+        // and return the value
+
+        return (this.amount / this.toSpotRate).toFixed(2);
+      }
+      if (this.fromSpotRate === this.toSpotRate) {
+        return this.amount;
+      }
+
+      /* 
+        "The from currencey value is either greater than or equal to the destination currency value."
+      */
+      // then  the necessary calculations  are here
+      // and return the value
+      return (this.amount * this.fromSpotRate).toFixed(2);
+    }
+  },
+
+  methods: {
+    convert() {
+      axios
+        .get(
+          `https://g9jgss86gg.execute-api.us-east-1.amazonaws.com/test/currency/details?currency_code=${this.convertfrom}`
+        )
+        .then(response => {
+          this.fromSpotRate = response.data.payload.spot_rate;
+        });
+
+      axios
+        .get(
+          `https://g9jgss86gg.execute-api.us-east-1.amazonaws.com/test/currency/details?currency_code=${this.convertto}`
+        )
+        .then(response => {
+          this.toSpotRate = response.data.payload.spot_rate;
+        });
     }
   }
 };
@@ -133,4 +164,33 @@ input {
     height: 200px;
   }
 }
+
+#convert-button {
+  padding: 15px;
+  background-color: #008ecc;
+  color: white;
+  border: none;
+  margin: 3rem;
+}
+.button_style {
+  color: #fff !important;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 20px;
+  border-radius: 5px;
+  display: inline-block;
+  border: none;
+  transition: all 0.4s ease 0s;
+}
+.button_style:hover {
+  letter-spacing: 1px;
+  -webkit-box-shadow: 0px 5px 40px -10px rgba(0, 0, 0, 0.57);
+  -moz-box-shadow: 0px 5px 40px -10px rgba(0, 0, 0, 0.57);
+  box-shadow: 5px 40px -10px rgba(0, 0, 0, 0.57);
+  transition: all 0.4s ease 0s;
+}
 </style>
+
+
+
+
